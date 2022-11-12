@@ -117,9 +117,11 @@ class Tree
         /** @var Node $node */
         $node = is_int($value) ? $this->find($value) : $value;
         /** @var Node $parent */
+        if (!$node) {
+            return;
+        }
         $parent = $this->findParent($node->data);
         if ($node->left && $node->right) {
-
             $min = $node->right->min();
             $this->delete($min);
             $node->data = $min->data;
@@ -185,5 +187,94 @@ class Tree
         }
 
         return $result;
+    }
+
+    private function _balance($list)
+    {
+        if (empty($list)) {
+            return;
+        }
+        // split the list
+        $chunks = array_chunk($list, (int)ceil(count($list) / 2));
+        $mid = array_pop($chunks[0]);
+        $this->insert($mid);
+        $this->_balance($chunks[0]);
+        if (isset($chunks[1])) {
+            $this->_balance($chunks[1]);
+        }
+    }
+
+    /**
+     * Balance a binary search tree
+     */
+    public function balance($list)
+    {
+
+        $chunks = array_chunk($list, (int)ceil(count($list) / 2));
+        $mid = array_pop($chunks[0]);
+        $this->insert($mid);
+        $this->_balance($chunks[0]);
+        $this->_balance($chunks[1]);
+    }
+
+    /**
+     * @return void
+     */
+    public function print()
+    {
+        $height = $this->getHeight();
+        $this->printTree($this->root, 0, $height);
+    }
+
+    /**
+     * @param null|Node $root
+     * @param int $space
+     * @param int $height
+     *
+     * @return void
+     */
+    private function printTree(?Node $root, int $space, int $height)
+    {
+        if ($root == null) {
+            return;
+        }
+        $space += $height;
+        $this->printTree($root->right, $space, $height);
+        echo "\n";
+        for ($i = $height; $i < $space; $i++) {
+            echo(' ');
+        }
+        echo($root->data);
+        echo "\n";
+        $this->printTree($root->left, $space, $height);
+    }
+
+    /**
+     * @return int
+     */
+    private function getHeight(): int
+    {
+        //Get left height
+        $node = $this->root;
+        $leftHeight = 0;
+        while ($node->left) {
+            if (!$node->left) {
+                break;
+            }
+            $leftHeight++;
+            $node = $node->left;
+        }
+        //Get right height
+        $node = $this->root;
+        $rightHeight = 0;
+        while ($node->right) {
+            if (!$node->right) {
+                break;
+            }
+            $rightHeight++;
+            $node = $node->right;
+        }
+
+        return max($leftHeight, $rightHeight);
     }
 }
